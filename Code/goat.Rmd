@@ -1,0 +1,283 @@
+---
+title: "Goat Data"
+author: "Tanin Rajamand"
+date: "2024-12-08"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 5
+  html_document:
+    toc: true
+    toc_depth: 5
+---
+
+Our focus will be on analyzing goat-related agricultural data and visualizing it geographically using geospatial tools.
+
+Objective:
+To analyze goat-related data, specifically focusing on operations with sales at the county level in the United States. We'll visualize this data on a map to uncover regional trends.
+
+Dataset source: USDA
+
+Questions We’re Answering:
+What do goat sales look like across the U.S. at a county level?
+How can we clean and prepare this data for geospatial analysis?
+How do different regions, like Missouri and Mississippi, compare?
+Setting Up the Environment
+
+# Load the Libraries 
+before we begin:
+```{r}
+library(sf)
+library(ggplot2)
+library(dplyr)
+library(viridis)
+library(readr)
+library(tigris)
+library(stringr)
+
+```
+
+sf: Provides tools for working with geospatial data in R. It supports simple features (like polygons, lines, and points), enabling spatial operations like joining data with shapefiles.
+ggplot2: A powerful package for creating data visualizations. It allows customization and layering of plots, including geospatial maps.
+dplyr: Simplifies data manipulation, like filtering, summarizing, and joining datasets.
+viridis: Adds visually appealing, perceptually uniform color scales to your plots. These are great for accessibility (e.g., colorblind-friendly).
+readr: Provides fast and friendly tools for reading data files like .csv.
+tigris: Downloads and processes Census TIGER/Line shapefiles, which contain geographic and cartographic boundary information for the U.S.
+stringr: Simplifies string manipulation tasks like cleaning or formatting text
+
+
+# Load the Data
+lets load the data
+
+```{r}
+setwd("~/Lab R/Cattle Supporting Data")
+goat <- read_csv("goat.csv")
+
+```
+# Looking at the Columns: 
+Colnames: 
+```{r}
+colnames(goat)
+```
+
+
+# Seeing Unique Columns: 
+```{r}
+# List of columns to check
+columns <- c(
+  "Program", "Year", "Period", "Week Ending", "Geo Level", "State", 
+  "State ANSI", "Ag District", "Ag District Code", "County", "County ANSI", 
+  "Zip Code", "Region", "watershed_code", "Watershed", "Commodity", 
+  "Data Item", "Domain", "Domain Category", "Value", "CV (%)"
+)
+
+# Loop through each column and display unique values
+for (col in columns) {
+  cat("Unique values in column:", col, "\n")
+  print(unique(goat[[col]]))
+  cat("\n")
+}
+
+```
+# Further Information: 
+Just an FYI: 
+The categories I selected for domain item:
+Data Item:
+
+But as you can see in 2022 with census data, we only had 
+GOATS - OPERATIONS WITH SALES
+GOATS - SALES, MEASURED IN $
+GOATS - SALES, MEASURED IN HEAD
+GOATS, ANGORA - OPERATIONS WITH SALES
+GOATS, ANGORA - SALES, MEASURED IN $
+GOATS, ANGORA - SALES, MEASURED IN HEAD
+GOATS, MEAT & OTHER - OPERATIONS WITH SALES
+GOATS, MEAT & OTHER - SALES, MEASURED IN $
+GOATS, MEAT & OTHER - SALES, MEASURED IN HEAD
+GOATS, MILK - OPERATIONS WITH SALES
+GOATS, MILK - SALES, MEASURED IN $
+GOATS, MILK - SALES, MEASURED IN HEAD
+
+But we only chose GOATS - OPERATIONS WITH SALES
+
+ok so lets continue.
+
+lets get rid of the things are either NA or only have one output 
+
+# No NA and No Output: 
+```{r}
+goat <- subset(goat, select = c(
+  "State", "State ANSI", "Ag District", "Ag District Code", "County", "County ANSI", "Data Item","Domain", "Domain Category", "Value", "CV (%)"
+))
+
+```
+
+# Load County Shapefiles
+We downloaded the data from 2022. 
+
+```{r}
+# Download county shapefiles for 2021 (simplified geometries for faster plotting)
+# we need tirgis here
+counties_sf <- counties(cb = TRUE, resolution = "20m", year = 2021) %>%
+  st_as_sf()  # Ensure it's an sf object
+
+# Clean county shapefiles
+# we need stringr here
+counties_sf <- counties_sf %>%
+  mutate(
+    NAME = str_to_title(NAME),  # Title case for county names
+    STATEFP = sprintf("%02d", as.numeric(STATEFP))  # Ensure FIPS is two-character
+  )
+
+```
+
+# Filter for the mainland
+```{r}
+counties_sf_mainland <- counties_sf %>%
+  filter(!STATEFP %in% c("02", "15"))
+```
+
+
+
+# Join the data:
+```{r}
+# Join your data with the filtered counties_sf
+joined_data <- counties_sf %>%
+  left_join(goat, by = c("STATEFP" = "State ANSI", "COUNTYFP" = "County ANSI"))
+
+# Check the results
+nrow(joined_data)  # Should match nrow(counties_sf)
+head(joined_data)
+
+```
+
+# Remove Hawaii and Alaska: 
+lets remove the alaska and hawaii and see if the data matches 
+```{r}
+# Remove rows with missing data from farmco_mapped
+joined_data <- joined_data %>%
+  filter(!is.na(Value))  #"Value" is the column containing the data you're interested in
+
+goat <- goat %>%
+  filter(!is.na(Value))
+
+# Remove rows for Alaska and Hawaii
+goat <- goat %>%
+  filter(!State %in% c("HAWAII", "ALASKA"))
+
+joined_data <- joined_data %>%
+  filter(!State %in% c("HAWAII", "ALASKA"))
+
+# Check the number of rows after filtering
+nrow(goat)
+nrow(joined_data)
+```
+yayy great
+
+# Clean the Data: 
+```{r}
+# Clean the data using the first approach
+joined_data_clean <- joined_data %>%
+  mutate(
+    Value = as.numeric(gsub("[^0-9.]", "", Value))  # Remove non-numeric characters before conversion
+  ) %>%
+  filter(!is.na(Value))  # Filter out rows where Value is NA
+
+nrow(goat)
+nrow(joined_data)
+nrow(joined_data_clean)
+sum(is.na(goat$Value))  # Count rows with NA in Value
+
+# Check how many rows in goat are unmatched:
+unmatched_goat <- goat %>%
+  anti_join(counties_sf, by = c("State ANSI" = "STATEFP", "County ANSI" = "COUNTYFP"))
+nrow(unmatched_goat)  # Should match sum(is.na(goat$Value)) if NA rows are unmatched
+
+```
+nice
+
+# Map based on Data Item:
+lets be reminded of them again:
+GOATS - OPERATIONS WITH SALES
+```{r}
+# Filter the cleaned data for the specific Data Item
+joined_data_clean_dataitem_opwsales <- joined_data_clean %>%
+  filter(`Data Item` == "GOATS - OPERATIONS WITH SALES")
+
+# Map the filtered data
+ggplot(data = joined_data_clean_dataitem_opwsales) +
+  geom_sf(aes(fill = Value)) +  # Fill counties based on numeric Value
+  scale_fill_viridis_c(
+    option = "inferno",
+    na.value = "gray90",
+    trans = "log10",  # Log scale for better color distribution
+    direction = -1    # Reverse color scale if needed
+  ) +
+  theme_minimal() +
+  labs(
+    title = "County-Level GOATS - OPERATIONS WITH SALES",
+    fill = "OPERATIONS WITH SALES"
+  ) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+
+# Missouri: 
+lets do Missouri: 
+```{r}
+# Filter the cleaned data for the specific Data Item
+joined_data_clean_dataitem_opwsales <- joined_data_clean %>%
+  filter(`Data Item` == "GOATS - OPERATIONS WITH SALES", State == "MISSOURI")
+
+# Map the filtered data
+ggplot(data = joined_data_clean_dataitem_opwsales) +
+  geom_sf(aes(fill = Value)) +  # Fill counties based on numeric Value
+  scale_fill_viridis_c(
+    option = "inferno",
+    na.value = "gray90",
+    trans = "log10",  # Log scale for better color distribution
+    direction = -1    # Reverse color scale if needed
+  ) +
+  theme_minimal() +
+  labs(
+    title = "MISSOURI - County-Level GOATS - OPERATIONS WITH SALES",
+    fill = "OPERATIONS WITH SALES"
+  ) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+# MISSISSIPPI: 
+lets do MISSISSIPPI: 
+```{r}
+# Filter the cleaned data for the specific Data Item
+joined_data_clean_dataitem_opwsales <- joined_data_clean %>%
+  filter(`Data Item` == "GOATS - OPERATIONS WITH SALES", State == "MISSISSIPPI")
+
+# Map the filtered data
+ggplot(data = joined_data_clean_dataitem_opwsales) +
+  geom_sf(aes(fill = Value)) +  # Fill counties based on numeric Value
+  scale_fill_viridis_c(
+    option = "inferno",
+    na.value = "gray90",
+    trans = "log10",  # Log scale for better color distribution
+    direction = -1    # Reverse color scale if needed
+  ) +
+  theme_minimal() +
+  labs(
+    title = "MISSISSIPPI - County-Level GOATS - OPERATIONS WITH SALES",
+    fill = "OPERATIONS WITH SALES"
+  ) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+________________________
+
