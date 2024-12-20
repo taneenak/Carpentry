@@ -147,6 +147,10 @@ joined_data %>%
 Expected Output: A map of Missouri showing goat sales by county.
 
 # Repeat this for Mississippi or any other state.
+<img  src="https://github.com/taneenak/Carpentry/blob/main/images/MISSOURI.png?raw=true"  alt=":)"  width="70%" />
+
+<img  src="https://github.com/taneenak/Carpentry/blob/main/images/MISSISSIPPI.png?raw=true"  alt=":)"  width="70%" />
+
 
 # Conclusion
 We’ve successfully:
