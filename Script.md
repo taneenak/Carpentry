@@ -4,6 +4,9 @@ Hello everyone! Today, we're diving into an exciting data analysis project using
 
 This session is hands-on, and I'll guide you through the entire process step-by-step. By the end, you’ll understand how to explore datasets, clean and join them, and create visualizations.
 
+# Data Source:
+The data source is USDA. 
+
 # Overview of the Project
 # Objective:
 To analyze goat-related data, specifically focusing on operations with sales at the county level in the United States. We'll visualize this data on a map to uncover regional trends.
