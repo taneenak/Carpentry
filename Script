@@ -1,14 +1,14 @@
-Introduction
+# Introduction
 
 Hello everyone! Today, we're diving into an exciting data analysis project using R. Our focus will be on analyzing goat-related agricultural data and visualizing it geographically using geospatial tools.
 
 This session is hands-on, and I'll guide you through the entire process step-by-step. By the end, you’ll understand how to explore datasets, clean and join them, and create visualizations.
 
-Overview of the Project
-Objective:
+# Overview of the Project
+# Objective:
 To analyze goat-related data, specifically focusing on operations with sales at the county level in the United States. We'll visualize this data on a map to uncover regional trends.
 
-Questions We’re Answering:
+# Questions We’re Answering:
 
 What do goat sales look like across the U.S. at a county level?
 How can we clean and prepare this data for geospatial analysis?
@@ -17,7 +17,7 @@ Setting Up the Environment
 Instructor:
 Before we start coding, let’s load the necessary libraries. Each library has a specific purpose:
 
-r
+<pre> ```r 
 Copy code
 library(sf)
 library(ggplot2)
@@ -26,6 +26,7 @@ library(viridis)
 library(readr)
 library(tigris)
 library(stringr)
+``` </pre>
 sf: This library is used for geospatial data handling. It helps us work with maps and shapefiles.
 ggplot2: A fantastic tool for creating visualizations, including geospatial maps.
 dplyr: Makes data manipulation like filtering and joining very easy.
