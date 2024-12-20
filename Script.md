@@ -146,7 +146,7 @@ Expected Output: A map of Missouri showing goat sales by county.
 # Conclusion
 We’ve successfully:
 
-Explored and cleaned the dataset.
-Merged it with geospatial data.
-Created maps to visualize regional trends.
-Remember, the tools and techniques you’ve learned today are versatile and can be applied to many datasets.
+- Explored and cleaned the dataset.
+- Merged it with geospatial data.
+- Created maps to visualize regional trends.
+- Remember, the tools and techniques you’ve learned today are versatile and can be applied to many datasets.
