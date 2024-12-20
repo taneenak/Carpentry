@@ -10,11 +10,11 @@ To analyze goat-related data, specifically focusing on operations with sales at 
 
 # Questions We’re Answering:
 
-What do goat sales look like across the U.S. at a county level?
-How can we clean and prepare this data for geospatial analysis?
-How do different regions, like Missouri and Mississippi, compare?
-Setting Up the Environment
-Instructor:
+- What do goat sales look like across the U.S. at a county level?
+- How can we clean and prepare this data for geospatial analysis?
+- How do different regions, like Missouri and Mississippi, compare?
+- Setting Up the Environment
+
 Before we start coding, let’s load the necessary libraries. Each library has a specific purpose:
 
 ```r 
@@ -26,24 +26,26 @@ library(readr)
 library(tigris)
 library(stringr)
 ``` 
-sf: This library is used for geospatial data handling. It helps us work with maps and shapefiles.
-ggplot2: A fantastic tool for creating visualizations, including geospatial maps.
-dplyr: Makes data manipulation like filtering and joining very easy.
-viridis: Provides beautiful, accessible color scales for our visualizations.
-readr: Reads CSV files into R quickly and efficiently.
-tigris: Downloads shapefiles, which define geographic boundaries like counties and states.
-stringr: Helps with string manipulations, like cleaning and formatting text.
+- sf: This library is used for geospatial data handling. It helps us work with maps and shapefiles.
+- ggplot2: A fantastic tool for creating visualizations, including geospatial maps.
+- dplyr: Makes data manipulation like filtering and joining very easy.
+- viridis: Provides beautiful, accessible color scales for our visualizations.
+- readr: Reads CSV files into R quickly and efficiently.
+- tigris: Downloads shapefiles, which define geographic boundaries like counties and states.
+- stringr: Helps with string manipulations, like cleaning and formatting text.
+  
 Expected Output: No errors should appear when these libraries are loaded.
 
 # Step 1: Load the Dataset
 We’ll start by loading the dataset into R. Here’s how to set the working directory and read the CSV file:
 
 ```r 
-setwd("~/Lab R/Cattle Supporting Data")
+setwd("~/Lab R/Cattle Supporting Data") - This is subject to change! 
 goat <- read_csv("goat.csv")
 ```
 setwd(): Tells R where to find your dataset.
 read_csv(): Reads the goat.csv file into a data frame called goat.
+
 Expected Output: A message summarizing the dataset, such as column names and row counts.
 
 # Step 2: Examine the Dataset
@@ -113,7 +115,7 @@ left_join(): Combines the two datasets based on matching state and county codes.
 Expected Output: A merged dataset with both geospatial and goat data.
 
 # Step 7: Visualize the Data
-Instructor:
+
 Let’s create a map showing operations with goat sales:
 
 ```r 
