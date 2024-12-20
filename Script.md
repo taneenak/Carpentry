@@ -7,8 +7,9 @@ This session is hands-on, and I'll guide you through the entire process step-by-
 # Overview of the Project
 # Objective:
 To analyze goat-related data, specifically focusing on operations with sales at the county level in the United States. We'll visualize this data on a map to uncover regional trends.
+```bash
 /images/goat_operations_map.png
-
+```
 # Questions We’re Answering:
 
 - What do goat sales look like across the U.S. at a county level?
